@@ -97,31 +97,34 @@ Prototype and build IoT systems without setting up servers or developing web sof
  
 # PROGRAM:
 ```
+#include "ThingSpeak.h"
 #include <WiFi.h>
-#include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
-#define Soil_Moisture 34
-char ssid[] = "OnePlus 11R";   // your network SSID (name) 
-char pass[] = "qwertyui";   // your network password
-int keyIndex = 0;            // your network key Index number (needed only for WEP)
+
+char ssid[] = "OnePlus 11R"; //SSID
+char pass[] = "qwertyui"; // Password
+
+
+const int trigger = 25;
+const int echo = 26;
+long T;
+float distanceCM;
 WiFiClient  client;
 
-unsigned long myChannelNumber = 2792152;
-const int ChannelField = 1; 
-const char * myWriteAPIKey = "UB3PHLWYQX7F4BDZ";
+unsigned long myChannelField =2792164 ; // Channel ID
+const int ChannelField = 1; // Which channel to write data
+const char * myWriteAPIKey = "HF6JQNUBORCD8NBU"; // Your write API Key
 
-const int airValue = 4095;      // Analog value when the sensor is in dry air
-const int waterValue = 0;
-int percentage =0;
-void setup() {
-  Serial.begin(115200);  //Initialize serial
-  pinMode(Soil_Moisture, INPUT);
-  WiFi.mode(WIFI_STA);   
-  ThingSpeak.begin(client);  // Initialize ThingSpeak
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(trigger, OUTPUT);
+  pinMode(echo, INPUT);
+  WiFi.mode(WIFI_STA);
+  ThingSpeak.begin(client);
 }
-
 void loop()
 {
- if (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED)
   {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
@@ -133,29 +136,30 @@ void loop()
     }
     Serial.println("\nConnected.");
   }
+  digitalWrite(trigger, LOW);
+  delay(1);
+  digitalWrite(trigger, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger, LOW);
+  T = pulseIn(echo, HIGH);
+  distanceCM = T * 0.034;
+  distanceCM = distanceCM / 2;
+  Serial.print("Distance in cm: ");
+  Serial.println(distanceCM);
+  ThingSpeak.writeField(myChannelField, ChannelField, distanceCM, myWriteAPIKey);
+  delay(1000);
+}![iotoutput](https://github.com/user-attachments/assets/754cc0bd-4d3e-41a0-aa8a-ed1e963bca67)
 
- /* Soil MoistureSensor */
-  int Soil_Value = analogRead(Soil_Moisture);
-  percentage = map(Soil_Value, airValue, waterValue, 0, 100);
-
-  // Ensure the percentage stays in the 0-100 range
-  percentage = constrain(percentage, 0, 100);
-  Serial.println("Soil moisture percentage");
-  Serial.println(percentage);
-  ThingSpeak.writeField(myChannelNumber, ChannelField, percentage, myWriteAPIKey);
-  
-   delay(5000); // Wait 20 seconds to update the channel again
-}
 ```
 # CIRCUIT DIAGRAM:
-![iotcircuitdiagram](https://github.com/user-attachments/assets/e9e3cc86-0539-4de8-83ab-d785798ffeea)
+
+![iotcircuitdiagram](https://github.com/user-attachments/assets/e5814b71-be76-463a-8f0a-9bbd9cc6c485)
 
 
 
 # OUTPUT:
-![iotoutput](https://github.com/user-attachments/assets/feee3cf2-a482-4bf4-b227-c3efa7239903)
-
-![iotflowchart](https://github.com/user-attachments/assets/94c23eb1-1fa3-404d-b01a-ae350102ed17)
+![iotoutput](https://github.com/user-attachments/assets/d7b7dddd-881e-4678-af27-1a861654e76f)
+![iotflowchart](https://github.com/user-attachments/assets/9c7c4408-7c60-426a-b21c-48ee6a57c474)
 
 # RESULT:
 Thus the distance values are updated in the Thing speak cloud using ESP32 controller.
