@@ -96,8 +96,67 @@ Prototype and build IoT systems without setting up servers or developing web sof
 
  
 # PROGRAM:
+```
+#include <WiFi.h>
+#include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
+#define Soil_Moisture 34
+char ssid[] = "OnePlus 11R";   // your network SSID (name) 
+char pass[] = "qwertyui";   // your network password
+int keyIndex = 0;            // your network key Index number (needed only for WEP)
+WiFiClient  client;
+
+unsigned long myChannelNumber = 2792152;
+const int ChannelField = 1; 
+const char * myWriteAPIKey = "UB3PHLWYQX7F4BDZ";
+
+const int airValue = 4095;      // Analog value when the sensor is in dry air
+const int waterValue = 0;
+int percentage =0;
+void setup() {
+  Serial.begin(115200);  //Initialize serial
+  pinMode(Soil_Moisture, INPUT);
+  WiFi.mode(WIFI_STA);   
+  ThingSpeak.begin(client);  // Initialize ThingSpeak
+}
+
+void loop()
+{
+ if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      WiFi.begin(ssid, pass);
+      Serial.print(".");
+      delay(5000);
+    }
+    Serial.println("\nConnected.");
+  }
+
+ /* Soil MoistureSensor */
+  int Soil_Value = analogRead(Soil_Moisture);
+  percentage = map(Soil_Value, airValue, waterValue, 0, 100);
+
+  // Ensure the percentage stays in the 0-100 range
+  percentage = constrain(percentage, 0, 100);
+  Serial.println("Soil moisture percentage");
+  Serial.println(percentage);
+  ThingSpeak.writeField(myChannelNumber, ChannelField, percentage, myWriteAPIKey);
+  
+   delay(5000); // Wait 20 seconds to update the channel again
+}
+```
 # CIRCUIT DIAGRAM:
+![iotcircuitdiagram](https://github.com/user-attachments/assets/e9e3cc86-0539-4de8-83ab-d785798ffeea)
+
+
+
 # OUTPUT:
+![iotoutput](https://github.com/user-attachments/assets/feee3cf2-a482-4bf4-b227-c3efa7239903)
+
+![iotflowchart](https://github.com/user-attachments/assets/94c23eb1-1fa3-404d-b01a-ae350102ed17)
+
 # RESULT:
 Thus the distance values are updated in the Thing speak cloud using ESP32 controller.
 
