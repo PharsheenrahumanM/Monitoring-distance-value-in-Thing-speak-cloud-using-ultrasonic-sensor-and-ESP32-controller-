@@ -1,4 +1,7 @@
-# Monitoring-distance-value-in-Thing-speak-cloud-using-ultrasonic-sensor-and-ESP32-controller
+# NAME: PHARSHEEN RAHUMAN M
+# REG NO: 24006746
+
+# EXPERIMENT 6: Monitoring-distance-value-in-Thing-speak-cloud-using-ultrasonic-sensor-and-ESP32-controller
 
 # Uploading ultrasonic sensor data in Thing Speak cloud
 
